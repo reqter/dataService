@@ -1,2 +1,2 @@
-# dataService
-Data service for reqter project
+# contentService
+Content loader service
