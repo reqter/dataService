@@ -1,4 +1,4 @@
-const Requests = require('../models/request');
+const Requests = require('../models/form');
 var uniqid = require('uniqid');
 var filter = function(req, cb)
 {
@@ -114,7 +114,7 @@ var findAll = function(req, cb)
 };
 var findById = function(req, cb)
 {
-    Requests.findById(req.body.id).populate('contentType').populate('category').exec(function(err, request){
+    Requests.findById(req.body.id).populate('contentType').populate('category').exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -124,11 +124,11 @@ var findById = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
             result.success = true;
             result.error = undefined;
-            result.data =  request;
+            result.data =  form;
             cb(result); 
         }
         else
@@ -144,7 +144,7 @@ var findById = function(req, cb)
 var findByLink = function(req, cb)
 {
     console.log(req);
-    Requests.findOne({"sys.link" : req.body.link}).populate('contentType').populate('category').populate("sys.issuer").exec(function(err, request){
+    Requests.findOne({"sys.link" : req.body.link}).populate('contentType').populate('category').populate("sys.issuer").exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -154,12 +154,12 @@ var findByLink = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
             result.success = true;
             result.error = undefined;
 
-            result.data =  request;
+            result.data =  form;
             cb(result); 
         }
         else
@@ -174,7 +174,7 @@ var findByLink = function(req, cb)
 var addContent = function(req, cb)
 {
     console.log(req.body);
-    var request = new Requests({
+    var form = new Requests({
         sys : {},
         contentType : req.body.contentType,
         category : req.body.category,
@@ -195,15 +195,15 @@ var addContent = function(req, cb)
     newStatus.applyDate = new Date();
     newStatus.user = req.userId;
     newStatus.description = "Item created";
-    request.status = "draft";
-    request.statusLog.push(newStatus);
+    form.status = "draft";
+    form.statusLog.push(newStatus);
 
-    request.sys.type = "request";
-    request.sys.link = uniqid();
-    request.sys.issuer = req.userId;
-    request.sys.issueDate = new Date();
-    request.sys.spaceId = req.spaceId;
-    request.save(function(err){
+    form.sys.type = "form";
+    form.sys.link = uniqid();
+    form.sys.issuer = req.userId;
+    form.sys.issueDate = new Date();
+    form.sys.spaceId = req.spaceId;
+    form.save(function(err){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -217,14 +217,14 @@ var addContent = function(req, cb)
         //Publish user registered event
         result.success = true;
         result.error = undefined;
-        result.data =  request;
+        result.data =  form;
         cb(result); 
     });
 };
 
 var deleteContent = function(req, cb)
 {
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -234,9 +234,9 @@ var deleteContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
-            Requests.remove({_id : request._id}, function(err){
+            Requests.remove({_id : form._id}, function(err){
                 if(err)
                 {
                     result.success = false;
@@ -275,12 +275,12 @@ var updateContent = function(req, cb)
             {
                 result.success = false;
                 result.data =  undefined;
-                result.error = "Invalid request";
+                result.error = "Invalid form";
                 cb(result);       
                 return; 
             }
     }
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -290,34 +290,34 @@ var updateContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
-            request.category = req.body.category;
-            request.contentType = req.body.contentType;
-            request.attachments = req.body.attachments;
-            request.thumbnail = [];
-            request.thumbnail = req.body.thumbnail;
-            request.description = req.body.description;
-            request.longDesc = {};
-            request.longDesc = req.body.longDesc;
-            request.title = req.body.title;
-            request.receiver = req.body.receiver;
-            request.settings = req.body.settings;
-            if (request.status != "draft")
+            form.category = req.body.category;
+            form.contentType = req.body.contentType;
+            form.attachments = req.body.attachments;
+            form.thumbnail = [];
+            form.thumbnail = req.body.thumbnail;
+            form.description = req.body.description;
+            form.longDesc = {};
+            form.longDesc = req.body.longDesc;
+            form.title = req.body.title;
+            form.receiver = req.body.receiver;
+            form.settings = req.body.settings;
+            if (form.status != "draft")
             {
                 var newStatus = {}
                 newStatus.code = "changed";
                 newStatus.applyDate = new Date();
                 newStatus.user = req.userId;
                 newStatus.description = "Item updated";
-                request.status = "changed";
-                request.statusLog.push(newStatus);
+                form.status = "changed";
+                form.statusLog.push(newStatus);
             }
-            request.sys.lastUpdater = req.userId;
+            form.sys.lastUpdater = req.userId;
              if (req.body.contentType)
-                request.contentType = req.body.contentType;
-            request.sys.lastUpdateTime = new Date();
-            request.save(function(err){
+                form.contentType = req.body.contentType;
+            form.sys.lastUpdateTime = new Date();
+            form.save(function(err){
                 if(err)
                 {
                     result.success = false;
@@ -328,7 +328,7 @@ var updateContent = function(req, cb)
                 }
                 //Successfull. 
                 //Publish user profile updated event
-                Requests.findById(req.body.id).exec(function(err, request){
+                Requests.findById(req.body.id).exec(function(err, form){
                     if(err)
                     {
                         result.success = false;
@@ -339,7 +339,7 @@ var updateContent = function(req, cb)
                     }
                     result.success = true;
                     result.error = undefined;
-                    result.data =  request;
+                    result.data =  form;
                     cb(result); 
                     return
                 });
@@ -359,7 +359,7 @@ var updateContent = function(req, cb)
 
 var publishContent = function(req, cb)
 {
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -369,10 +369,10 @@ var publishContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
             console.log(req);
-            request.publish(req.body.userId, req.body.description, function(err){
+            form.publish(req.body.userId, req.body.description, function(err){
                 if(err)
                 {
                     result.success = false;
@@ -384,7 +384,7 @@ var publishContent = function(req, cb)
                 else
                 {
                     result.success = true;
-                    result.data =  request;
+                    result.data =  form;
                     result.error = undefined;
                     cb(result);       
                     return; 
@@ -404,7 +404,7 @@ var publishContent = function(req, cb)
 };
 var unPublishContent = function(req, cb)
 {
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -414,9 +414,9 @@ var unPublishContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
-            request.unPublish(function(err){
+            form.unPublish(function(err){
                 if(err)
                 {
                     result.success = false;
@@ -428,7 +428,7 @@ var unPublishContent = function(req, cb)
                 else
                 {
                     result.success = true;
-                    result.data =  request;
+                    result.data =  form;
                     result.error = undefined;
                     cb(result);       
                     return; 
@@ -448,7 +448,7 @@ var unPublishContent = function(req, cb)
 };
 var archiveContent = function(req, cb)
 {
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -458,9 +458,9 @@ var archiveContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
-            request.archive(req.userId, req.body.description, function(err){
+            form.archive(req.userId, req.body.description, function(err){
                 if(err)
                 {
                     result.success = false;
@@ -472,7 +472,7 @@ var archiveContent = function(req, cb)
                 else
                 {
                     result.success = true;
-                    result.data =  request;
+                    result.data =  form;
                     result.error = undefined;
                     cb(result);       
                     return; 
@@ -492,7 +492,7 @@ var archiveContent = function(req, cb)
 };
 var unArchiveContent = function(req, cb)
 {
-     Requests.findById(req.body.id).exec(function(err, request){
+     Requests.findById(req.body.id).exec(function(err, form){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -502,9 +502,9 @@ var unArchiveContent = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (form)
         {
-            request.unArchive(function(err){
+            form.unArchive(function(err){
                 if(err)
                 {
                     result.success = false;
@@ -516,7 +516,7 @@ var unArchiveContent = function(req, cb)
                 else
                 {
                     result.success = true;
-                    result.data =  request;
+                    result.data =  form;
                     result.error = undefined;
                     cb(result);       
                     return; 

@@ -160,7 +160,7 @@ var findByLink = function(req, cb)
             cb(result);       
             return; 
         }
-        if (request)
+        if (content)
         {
             result.success = true;
             result.error = undefined;
@@ -185,7 +185,7 @@ var addContent = function(req, cb)
         fields: req.body.fields,
         contentType : req.body.contentType,
         category : req.body.category,
-        requestId : req.body.requestId,
+        formId : req.body.formId,
         status : "draft",
         statusLog : []
     });
@@ -286,7 +286,7 @@ var updateContent = function(req, cb)
             {
                 result.success = false;
                 result.data =  undefined;
-                result.error = "Invalid request";
+                result.error = "Invalid content";
                 cb(result);       
                 return; 
             }
@@ -319,7 +319,7 @@ var updateContent = function(req, cb)
              if (req.body.contentType)
                 content.contentType = req.body.contentType;
             content.sys.lastUpdateTime = new Date();
-            content.requestId = req.body.requestId;
+            content.formId = req.body.formId;
             content.save(function(err){
                 if(err)
                 {

@@ -3,7 +3,7 @@ var sysfld = require('./sys');
 var Status = require('./status');
 var Schema = mongoose.Schema;
  
-var request = new Schema({
+var form = new Schema({
     sys : {type : sysfld, required : true},
     title : {type : Object, required : true},
     description : {type : Object},
@@ -18,7 +18,7 @@ var request = new Schema({
     settings : {type : Object}
 },);
 
-request.methods.publish = function(user, description, cb) {
+form.methods.publish = function(user, description, cb) {
     if (this.status != "published")
     {
         var newStatus = {}
@@ -34,7 +34,7 @@ request.methods.publish = function(user, description, cb) {
         cb("Item already published!");
 };
 
-request.methods.unPublish = function(cb) {
+form.methods.unPublish = function(cb) {
     if (this.status === "published" && this.statusLog.length > 0)
     {
         this.statusLog.pop();
@@ -45,7 +45,7 @@ request.methods.unPublish = function(cb) {
         cb("Error in unPublishing item!");
 };
 
-request.methods.archive = function(user, description, cb) {
+form.methods.archive = function(user, description, cb) {
     if (this.status != "archived")
     {
         var newStatus = {};
@@ -61,7 +61,7 @@ request.methods.archive = function(user, description, cb) {
         cb("Item already archived!");
 };
 
-request.methods.unArchive = function(cb) {
+form.methods.unArchive = function(cb) {
     if (this.status === "archived" && this.statusLog.length > 0)
     {
         this.statusLog.pop();
@@ -72,4 +72,4 @@ request.methods.unArchive = function(cb) {
         cb("Error in unArchiving item!");
 };
 
-module.exports = mongoose.model("Request", request);
+module.exports = mongoose.model("form", form);
