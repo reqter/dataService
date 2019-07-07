@@ -1,22 +1,30 @@
 var mongoose = require('mongoose');
 var sysfld = require('./sys');
+var field = require('./field');
 var Status = require('./status');
 var Schema = mongoose.Schema;
  
 var form = new Schema({
     sys : {type : sysfld, required : true},
     title : {type : Object, required : true},
+    shortDesc : {type : Object},
     description : {type : Object},
     longDesc : {type : Object},
     contentType : {type: Schema.Types.ObjectId, ref: 'ContentType' , required : true},
     category : {type: Schema.Types.ObjectId, ref: 'Category'},
+    partner : {type : Schema.Types.ObjectId, ref : 'Partners'},
     thumbnail : [Object],
     attachments : [Object],
-    receiver : {type : String},
+    featured : {type : Boolean, default : false},
+    startDate : {type : Date},
+    endDate : {type : Date},
+    template : {type : Object},
+    type : {type : String, enum : ['request', 'quote']},
     status : {type : String, enum : ['draft', 'published', 'changed', 'archived'], default : 'draft'},
     statusLog : [Status],
+    fields : [Object],
     settings : {type : Object}
-},);
+});
 
 form.methods.publish = function(user, description, cb) {
     if (this.status != "published")

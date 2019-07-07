@@ -179,12 +179,18 @@ var addContent = function(req, cb)
         contentType : req.body.contentType,
         category : req.body.category,
         title : req.body.title,
+        shortDesc : {},
+        shortDesc : req.body.shortDesc,
         description : req.body.description,
         longDesc : {},
         longDesc : req.body.longDesc,
         thumbnail : req.body.thumbnail,
         attachments : req.body.attachments,
-        receiver : req.body.receiver,
+        partner : req.body.partner,
+        type : req.body.type,
+        startDate : req.body.startDate,
+        endDate : req.body.endDate,
+        featured : req.body.featured,
         status : "draft",
         statusLog : [],
         settings : req.body.settings
@@ -298,10 +304,16 @@ var updateContent = function(req, cb)
             form.thumbnail = [];
             form.thumbnail = req.body.thumbnail;
             form.description = req.body.description;
+            form.shortDesc = {};
+            form.shortDesc = req.body.shortDesc;
             form.longDesc = {};
             form.longDesc = req.body.longDesc;
             form.title = req.body.title;
-            form.receiver = req.body.receiver;
+            form.partner = req.body.partner,
+            form.type = req.body.type,
+            form.startDate = req.body.startDate,
+            form.endDate = req.body.endDate,
+            form.featured = req.body.featured,
             form.settings = req.body.settings;
             if (form.status != "draft")
             {

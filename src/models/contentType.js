@@ -14,6 +14,7 @@ var contentType = new Schema({
     allowCustomFields : {type : Boolean, default : false},
     accessRight : {type : Boolean, default : false},
     categorization : {type : Boolean, default : true},
+    partner : {type : Schema.Types.ObjectId, ref : 'Partners'},
     fields : [Object],
     status : {type : Boolean, required : true, default : true}
 });

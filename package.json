@@ -26,7 +26,7 @@
   "dependencies": {
     "amqplib": "0.5.3",
     "async": "2.6.2",
-    "cqrs-domain": "2.14.71",
+    "cqrs-domain": "2.14.72",
     "mongoose": "5.4.12",
     "uniqid": "5.0.3"
   }
