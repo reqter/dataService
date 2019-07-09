@@ -23,7 +23,8 @@ var form = new Schema({
     status : {type : String, enum : ['draft', 'published', 'changed', 'archived'], default : 'draft'},
     statusLog : [Status],
     fields : [Object],
-    settings : {type : Object}
+    settings : {type : Object},
+    tags : [Object]
 });
 
 form.methods.publish = function(user, description, cb) {

@@ -1,7 +1,7 @@
 var amqp = require('amqplib/callback_api');
 var db = require('./init-db');
 const formController = require('./controllers/formController');
-// const contentController = require('./controllers/requestController');
+// const contentController = require('./controllers/formController');
 const ctypeController = require('./controllers/contentTypeController');
 const assetController = require('./controllers/assetController');
 const categoriesController = require('./controllers/categoryController');
@@ -550,7 +550,7 @@ function whenConnected() {
       //     });
       // });
 
-      ch.assertQueue("submitrequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("submitform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -568,9 +568,9 @@ function whenConnected() {
 
           });
       });
-      //Requests Api
+      //forms Api
 
-      ch.assertQueue("filterrequests", {durable: false}, (err, q)=>{
+      ch.assertQueue("filterforms", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -588,7 +588,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("getrequestbyid", {durable: false}, (err, q)=>{
+      ch.assertQueue("getformbyid", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -606,7 +606,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("getrequestbylink", {durable: false}, (err, q)=>{
+      ch.assertQueue("getformbylink", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -624,7 +624,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("addrequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("addform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -642,7 +642,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("updaterequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("updateform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -660,7 +660,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("removerequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("removeform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -678,7 +678,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("getrequests", {durable: false}, (err, q)=>{
+      ch.assertQueue("getforms", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -696,7 +696,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("publishrequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("publishform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -714,7 +714,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("unpublishrequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("unpublishform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -732,7 +732,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("archiverequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("archiveform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
@@ -750,7 +750,7 @@ function whenConnected() {
 
           });
       });
-      ch.assertQueue("unarchiverequest", {durable: false}, (err, q)=>{
+      ch.assertQueue("unarchiveform", {durable: false}, (err, q)=>{
         ch.consume(q.queue, function reply(msg) {
             var req = JSON.parse(msg.content.toString('utf8'));
             try{
