@@ -1,5 +1,5 @@
 var broker = require('../../rpcserver');
-function OnContentUnArchived(){
+function OnFormCreated(){
     var _onOkCallBack
     function _onOk (result) {
         if (_onOkCallBack) {
@@ -9,7 +9,7 @@ function OnContentUnArchived(){
     
     function _call(conntent) {
         console.log('event triggered.')
-        broker.publish("contentservice", "contentunarchived", conntent);
+        broker.publish("dataservice", "formcreated", conntent);
         _onOk(conntent);
     }
     return {
@@ -21,5 +21,5 @@ function OnContentUnArchived(){
     }
 }
 
-exports.OnContentUnArchived = OnContentUnArchived;
+exports.OnFormCreated = OnFormCreated;
 

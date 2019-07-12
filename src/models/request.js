@@ -1,78 +1,40 @@
 var mongoose = require('mongoose');
 var sysfld = require('./sys');
-var ctype = require('./contentType');
+var quote = require('./quote');
 var status = require('./status');
 var Schema = mongoose.Schema;
 
-var content = new Schema({
+var request = new Schema({
     sys : {type:sysfld, required :true},
     formId : {type: Schema.Types.ObjectId, ref: 'Form' },
     fields : {type : Object},
-    status : {type : String, enum : ['created','published', 'approved', 'changed', 'assignedtopartners', 'assignedtocaseofficer', 'offerreceived', 'closed'], default : 'created'},
+    status : {type : String, enum : ['created','published', 'approved', 'changed', 'assignedtopartners', 'assignedtocaseofficer', 'offerreceived', 'offeraccepted', 'closed'], default : 'created'},
     statusLog : [status],
     closeReason : {type : Object},
     versions : [Object],
     contentType : {type: Schema.Types.ObjectId, ref: 'ContentType' , required : true},
     category : {type: Schema.Types.ObjectId, ref: 'Category'},
-    userinfo : {type : Object}
+    account : {type : Schema.Types.ObjectId, ref: 'Account'},
+    contact : {type : Schema.Types.ObjectId, ref: 'Contact'},
+    quotes : [{type: Schema.Types.ObjectId, ref: 'Quote'}],
+    owner : {type: Object},
+    tracktion : {type : Object}
 });
 
-content.methods.publish = function(user, description, cb) {
-  if (this.status != "published")
+request.methods.setstatus = function(user, status, description, cb) {
+  if (this.status != status)
   {
       var newStatus = {};
-      newStatus.code = "published";
+      newStatus.code = status;
       newStatus.applyDate = new Date();
       newStatus.user = user;
       newStatus.description = description;
       this.statusLog.push(newStatus);
-      this.status = "published";
+      this.status = status;
       this.save(cb(undefined));
   }
   else
-      cb("Item already published!");
+      cb("Request already " + status + "!");
 };
 
-content.methods.unPublish = function(cb) {
-  if (this.status === "published" && this.statusLog.length > 0)
-  {
-      this.statusLog.pop();
-      this.status = this.statusLog[this.statusLog.length - 1].code;
-      this.save(cb);
-  }
-  else
-      cb("Error in unPublishing item!");
-};
-
-content.methods.archive = function(user, description, cb) {
-  if (this.status != "archived")
-  {
-      var newStatus = {};
-      newStatus.code = "archived";
-      newStatus.applyDate = new Date();
-      newStatus.user = user;
-      newStatus.description = description;
-      this.status = "archived";
-      this.statusLog.push(newStatus);
-      this.save(cb(undefined));
-  }
-  else
-      cb("Item already archived!");
-};
-
-
-content.methods.unArchive = function(cb) {
-  if (this.status === "archived" && this.statusLog.length > 0)
-  {
-      this.statusLog.pop();
-      this.status = this.statusLog[this.statusLog.length - 1].code;
-      this.save(cb);
-  }
-  else
-      cb("Error in unArchiving item!");
-};
-
-content.methods.count = function(cb) {
-    
-};
-module.exports = mongoose.model("Content", content);
+module.exports = mongoose.model("request", request);

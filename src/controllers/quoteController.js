@@ -1,8 +1,8 @@
-const Forms = require('../models/form');
+const Quotes = require('../models/quote');
 var uniqid = require('uniqid');
 var filter = function(req, cb)
 {
-    var c= undefined, ct, st, title;
+    var c= undefined, ct, st, title, form, request;
     if (req.body.category)
         c = req.body.category.split(',');
     if (req.body.contentType)
@@ -11,12 +11,18 @@ var filter = function(req, cb)
         st = req.body.status.split(',');
     if (req.body.title)
         title = req.body.title;
+    if (req.body.formId)
+        form = req.body.formId.split(',');
+    if (req.body.requestId)
+        form = req.body.requestId;
     var flt = {
         'sys.spaceId' : req.spaceId,
         title : title ,
         category : { $in : c} ,
         contentType : { $in : ct},
-        status : { $in : st} 
+        status : { $in : st},
+        formId : { $in : form} ,
+        request : request
     };
     if (!req.body.title)
         delete flt.title;
@@ -26,8 +32,12 @@ var filter = function(req, cb)
         delete flt.contentType;
     if (!req.body.status)
         delete flt.status;
+    if (!req.body.formId)
+        delete flt.formId;
+    if (!req.body.requestId)
+        delete flt.request;
     console.log(flt);
-    Forms.find(flt).populate('contentType', "title").populate('category', 'name').populate('company').exec(function(err, contents){
+    Quotes.find(flt).populate('contentType', "title").populate('category', 'name').populate('company').exec(function(err, contents){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -54,39 +64,9 @@ var filter = function(req, cb)
     });
 };
 
-var loadForms = function(req, cb)
-{
-    Forms.find({"sys.spaceId" : req.spaceId}).populate('contentType', "title").populate('company').populate('category', 'name')
-    .exec(function(err, contents){
-        var result = {success : false, data : null, error : null };
-        if (err)
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = err;
-            cb(result);       
-            return; 
-        }
-        if (Forms)
-        {
-            result.success = true;
-            result.error = undefined;
-            result.data =  contents;
-            cb(result); 
-        }
-        else
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = undefined;
-            cb(result); 
-        }
-    });
-};
-
 var findAll = function(req, cb)
 {
-    Forms.find({"sys.spaceId" : req.spaceId}).populate('contentType', "title").populate('company').populate('category', 'name').exec(function(err, contents){
+    Quotes.find({"sys.spaceId" : req.spaceId}).populate('contentType', "title").populate('company', "orgNumber, name").populate('category', 'name').exec(function(err, contents){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -96,7 +76,7 @@ var findAll = function(req, cb)
             cb(result);       
             return; 
         }
-        if (Forms)
+        if (Quotes)
         {
             result.success = true;
             result.error = undefined;
@@ -114,7 +94,7 @@ var findAll = function(req, cb)
 };
 var findById = function(req, cb)
 {
-    Forms.findById(req.body.id).populate('contentType').populate('company').populate('category').exec(function(err, form){
+    Quotes.findById(req.body.id).populate('contentType').populate('company', "orgNumber, name").populate('category').exec(function(err, quote){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -124,11 +104,11 @@ var findById = function(req, cb)
             cb(result);       
             return; 
         }
-        if (form)
+        if (quote)
         {
             result.success = true;
             result.error = undefined;
-            result.data =  form;
+            result.data =  quote;
             cb(result); 
         }
         else
@@ -144,7 +124,7 @@ var findById = function(req, cb)
 var findByLink = function(req, cb)
 {
     console.log(req);
-    Forms.findOne({"sys.link" : req.body.link}).populate('contentType').populate('company').populate('category').populate("sys.issuer").exec(function(err, form){
+    Quotes.findOne({"sys.link" : req.body.link}).populate('contentType').populate('company', "orgNumber, name").populate('category').populate("sys.issuer").exec(function(err, quote){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -154,12 +134,12 @@ var findByLink = function(req, cb)
             cb(result);       
             return; 
         }
-        if (form)
+        if (quote)
         {
             result.success = true;
             result.error = undefined;
 
-            result.data =  form;
+            result.data =  quote;
             cb(result); 
         }
         else
@@ -171,45 +151,66 @@ var findByLink = function(req, cb)
         }
     });
 };
-var addForm = function(req, cb)
+
+var findByRequestId = function(req, cb)
+{
+    console.log(req);
+    Quotes.findOne({"request" : req.body.requestId}).populate('contentType').populate('company', "orgNumber, name").populate('category').populate("sys.issuer").exec(function(err, quotes){
+        var result = {success : false, data : null, error : null };
+        if (err)
+        {
+            result.success = false;
+            result.data =  undefined;
+            result.error = err;
+            cb(result);       
+            return; 
+        }
+        if (quotes)
+        {
+            result.success = true;
+            result.error = undefined;
+
+            result.data =  quotes;
+            cb(result); 
+        }
+        else
+        {
+            result.success = false;
+            result.data =  undefined;
+            result.error = undefined;
+            cb(result); 
+        }
+    });
+};
+var addQuote = function(req, cb)
 {
     console.log(req.body);
-    var form = new Forms({
+    var quote = new Quotes({
         sys : {},
         contentType : req.body.contentType,
         category : req.body.category,
-        title : req.body.title,
-        shortDesc : {},
-        shortDesc : req.body.shortDesc,
-        description : req.body.description,
-        longDesc : {},
-        longDesc : req.body.longDesc,
-        thumbnail : req.body.thumbnail,
-        attachments : req.body.attachments,
-        company : req.body.company,
-        type : req.body.type,
-        startDate : req.body.startDate,
-        endDate : req.body.endDate,
-        featured : req.body.featured,
-        status : "draft",
+        formId : req.body.formId,
+        fields : req.body.fields,
+        status : "created",
         statusLog : [],
-        settings : req.body.settings
+        contact : req.body.contact,
+        account : req.body.account
     });
 
     var newStatus = {}
-    newStatus.code = "draft";
+    newStatus.code = "created";
     newStatus.applyDate = new Date();
     newStatus.user = req.userId;
     newStatus.description = "Item created";
-    form.status = "draft";
-    form.statusLog.push(newStatus);
+    quote.status = "created";
+    quote.statusLog.push(newStatus);
 
-    form.sys.type = "form";
-    form.sys.link = uniqid();
-    form.sys.issuer = req.userId;
-    form.sys.issueDate = new Date();
-    form.sys.spaceId = req.spaceId;
-    form.save(function(err){
+    quote.sys.type = "quote";
+    quote.sys.link = uniqid();
+    quote.sys.issuer = req.userId;
+    quote.sys.issueDate = new Date();
+    quote.sys.spaceId = req.spaceId;
+    quote.save(function(err){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -223,14 +224,14 @@ var addForm = function(req, cb)
         //Publish user registered event
         result.success = true;
         result.error = undefined;
-        result.data =  form;
+        result.data =  quote;
         cb(result); 
     });
 };
 
-var deleteForm = function(req, cb)
+var deleteQuote = function(req, cb)
 {
-     Forms.findById(req.body.id).exec(function(err, form){
+     Quotes.findById(req.body.id).exec(function(err, quote){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -240,9 +241,9 @@ var deleteForm = function(req, cb)
             cb(result);       
             return; 
         }
-        if (form)
+        if (quote)
         {
-            Forms.remove({_id : form._id}, function(err){
+            Quotes.remove({_id : quote._id}, function(err){
                 if(err)
                 {
                     result.success = false;
@@ -272,7 +273,7 @@ var deleteForm = function(req, cb)
     });
 };
 
-var updateForm = function(req, cb)
+var updateQuote = function(req, cb)
 {
     if (!req.body)
     {
@@ -281,12 +282,12 @@ var updateForm = function(req, cb)
             {
                 result.success = false;
                 result.data =  undefined;
-                result.error = "Invalid form";
+                result.error = "Invalid quote";
                 cb(result);       
                 return; 
             }
     }
-     Forms.findById(req.body.id).exec(function(err, form){
+     Quotes.findById(req.body.id).exec(function(err, quote){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -296,40 +297,27 @@ var updateForm = function(req, cb)
             cb(result);       
             return; 
         }
-        if (form)
+        if (quote)
         {
-            form.category = req.body.category;
-            form.contentType = req.body.contentType;
-            form.attachments = req.body.attachments;
-            form.thumbnail = [];
-            form.thumbnail = req.body.thumbnail;
-            form.description = req.body.description;
-            form.shortDesc = {};
-            form.shortDesc = req.body.shortDesc;
-            form.longDesc = {};
-            form.longDesc = req.body.longDesc;
-            form.title = req.body.title;
-            form.company = req.body.company,
-            form.type = req.body.type,
-            form.startDate = req.body.startDate,
-            form.endDate = req.body.endDate,
-            form.featured = req.body.featured,
-            form.settings = req.body.settings;
-            if (form.status != "draft")
+            quote.category = req.body.category;
+            quote.contentType = req.body.contentType;
+            quote.fields = req.body.fields;
+            
+            if (quote.status != "created")
             {
                 var newStatus = {}
                 newStatus.code = "changed";
                 newStatus.applyDate = new Date();
                 newStatus.user = req.userId;
                 newStatus.description = "Item updated";
-                form.status = "changed";
-                form.statusLog.push(newStatus);
+                quote.status = "changed";
+                quote.statusLog.push(newStatus);
             }
-            form.sys.lastUpdater = req.userId;
+            quote.sys.lastUpdater = req.userId;
              if (req.body.contentType)
-                form.contentType = req.body.contentType;
-            form.sys.lastUpdateTime = new Date();
-            form.save(function(err){
+                quote.contentType = req.body.contentType;
+            quote.sys.lastUpdateTime = new Date();
+            quote.save(function(err){
                 if(err)
                 {
                     result.success = false;
@@ -340,7 +328,7 @@ var updateForm = function(req, cb)
                 }
                 //Successfull. 
                 //Publish user profile updated event
-                Forms.findById(req.body.id).exec(function(err, form){
+                Quotes.findById(req.body.id).exec(function(err, quote){
                     if(err)
                     {
                         result.success = false;
@@ -351,7 +339,7 @@ var updateForm = function(req, cb)
                     }
                     result.success = true;
                     result.error = undefined;
-                    result.data =  form;
+                    result.data =  quote;
                     cb(result); 
                     return
                 });
@@ -369,9 +357,9 @@ var updateForm = function(req, cb)
     });
 };
 
-var publishForm = function(req, cb)
+var setStatus = function(req, cb)
 {
-     Forms.findById(req.body.id).exec(function(err, form){
+     Quotes.findById(req.body.id).exec(function(err, quote){
         var result = {success : false, data : null, error : null };
         if (err)
         {
@@ -381,10 +369,10 @@ var publishForm = function(req, cb)
             cb(result);       
             return; 
         }
-        if (form)
+        if (quote)
         {
             console.log(req);
-            form.publish(req.body.userId, req.body.description, function(err){
+            quote.setstatus(req.body.userId, req.body.status, req.body.description, function(err){
                 if(err)
                 {
                     result.success = false;
@@ -396,139 +384,7 @@ var publishForm = function(req, cb)
                 else
                 {
                     result.success = true;
-                    result.data =  form;
-                    result.error = undefined;
-                    cb(result);       
-                    return; 
-                }
-            });
-            return;
-        }
-        else
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = undefined;
-            cb(result);       
-            return; 
-        }
-    });
-};
-var unPublishForm = function(req, cb)
-{
-     Forms.findById(req.body.id).exec(function(err, form){
-        var result = {success : false, data : null, error : null };
-        if (err)
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = err;
-            cb(result);       
-            return; 
-        }
-        if (form)
-        {
-            form.unPublish(function(err){
-                if(err)
-                {
-                    result.success = false;
-                    result.data =  undefined;
-                    result.error = err;
-                    cb(result);       
-                    return; 
-                }
-                else
-                {
-                    result.success = true;
-                    result.data =  form;
-                    result.error = undefined;
-                    cb(result);       
-                    return; 
-                }
-            });
-            return;
-        }
-        else
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = undefined;
-            cb(result);       
-            return; 
-        }
-    });
-};
-var archiveForm = function(req, cb)
-{
-     Forms.findById(req.body.id).exec(function(err, form){
-        var result = {success : false, data : null, error : null };
-        if (err)
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = err;
-            cb(result);       
-            return; 
-        }
-        if (form)
-        {
-            form.archive(req.userId, req.body.description, function(err){
-                if(err)
-                {
-                    result.success = false;
-                    result.data =  undefined;
-                    result.error = err;
-                    cb(result);       
-                    return; 
-                }
-                else
-                {
-                    result.success = true;
-                    result.data =  form;
-                    result.error = undefined;
-                    cb(result);       
-                    return; 
-                }
-            });
-            return;
-        }
-        else
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = undefined;
-            cb(result);       
-            return; 
-        }
-    });
-};
-var unArchiveForm = function(req, cb)
-{
-     Forms.findById(req.body.id).exec(function(err, form){
-        var result = {success : false, data : null, error : null };
-        if (err)
-        {
-            result.success = false;
-            result.data =  undefined;
-            result.error = err;
-            cb(result);       
-            return; 
-        }
-        if (form)
-        {
-            form.unArchive(function(err){
-                if(err)
-                {
-                    result.success = false;
-                    result.data =  undefined;
-                    result.error = err;
-                    cb(result);       
-                    return; 
-                }
-                else
-                {
-                    result.success = true;
-                    result.data =  form;
+                    result.data =  quote;
                     result.error = undefined;
                     cb(result);       
                     return; 
@@ -551,11 +407,8 @@ exports.getAll = findAll;
 exports.filter = filter;
 exports.findById = findById;
 exports.findByLink = findByLink;
-exports.add = addForm;
-exports.delete = deleteForm;
-exports.update = updateForm;
-exports.load = loadForms;
-exports.publish = publishForm;
-exports.unPublish = unPublishForm;
-exports.archive = archiveForm;
-exports.unArchive = unArchiveForm;
+exports.findByRequest = findByRequestId;
+exports.add = addQuote;
+exports.delete = deleteQuote;
+exports.update = updateQuote;
+exports.setstatus = setStatus;

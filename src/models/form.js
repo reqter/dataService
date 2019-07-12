@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var sysfld = require('./sys');
-var field = require('./field');
 var Status = require('./status');
 var Schema = mongoose.Schema;
  
@@ -12,7 +11,7 @@ var form = new Schema({
     longDesc : {type : Object},
     contentType : {type: Schema.Types.ObjectId, ref: 'ContentType' , required : true},
     category : {type: Schema.Types.ObjectId, ref: 'Category'},
-    partner : {type : Schema.Types.ObjectId, ref : 'Partners'},
+    partner : {type : Schema.Types.ObjectId, ref : 'Company'},
     thumbnail : [Object],
     attachments : [Object],
     featured : {type : Boolean, default : false},

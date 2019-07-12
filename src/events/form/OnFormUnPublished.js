@@ -1,5 +1,5 @@
 var broker = require('../../rpcserver');
-function OnContentCreated(){
+function OnFormUnPublished(){
     var _onOkCallBack
     function _onOk (result) {
         if (_onOkCallBack) {
@@ -9,7 +9,7 @@ function OnContentCreated(){
     
     function _call(conntent) {
         console.log('event triggered.')
-        broker.publish("contentservice", "contentcreated", conntent);
+        broker.publish("dataservice", "formunpublished", conntent);
         _onOk(conntent);
     }
     return {
@@ -21,5 +21,5 @@ function OnContentCreated(){
     }
 }
 
-exports.OnContentCreated = OnContentCreated;
+exports.OnFormUnPublished = OnFormUnPublished;
 

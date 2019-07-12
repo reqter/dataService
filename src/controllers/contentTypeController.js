@@ -73,7 +73,8 @@ var addContentTypes = function(req, cb)
         allowCustomFields : req.body.allowCustomFields,
         accessRight : req.body.accessRight,
         categorization : req.body.categorization,
-        fields : req.body.fields
+        fields : req.body.fields,
+        company : req.body.company
     });
     cat.sys.type = "contentType";
     cat.sys.link = uniqid();
